@@ -78,7 +78,7 @@ resource "aws_instance" "mysql" {
   instance_type = "t3.micro"
   subnet_id = local.database_subnet_id
   vpc_security_group_ids = [local.mysql_sg_id]
-  
+  iam_instance_profile = aws_iam_instance_profile.mysql.name
   tags = merge(
     {
         Name = "${var.project}-${var.environment}-mysql"
@@ -96,6 +96,7 @@ resource "terraform_data" "mysql" {
     user     = "ec2-user"
     password = "DevOps321"
     host     = aws_instance.mysql.private_ip
+   
   }
    provisioner "file" {
     source      = "bootstrap.sh"  # Local file path
