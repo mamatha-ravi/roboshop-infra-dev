@@ -58,7 +58,7 @@ resource "aws_lb_target_group" "catalogue" {
   name     = "${var.project}-${var.environment}-catalogue"
   port     = 80
   protocol = "HTTP"
-  vpc_id   = aws_instance.catalogue.id
+  vpc_id   = local.vpc.id
  deregistration_delay = 60
 
   health_check {
