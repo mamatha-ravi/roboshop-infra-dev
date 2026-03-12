@@ -4,7 +4,7 @@
 #   instance_type = "t3.micro"
 #   subnet_id = local.database_subnet_id
 #   vpc_security_group_ids = [each.value]
-  
+  # iam_instance_profile = each.key == "mysql" ? aws_iam_instance_profile.mysql.name : null
 #   tags = merge(
 #     {
 #         Name = "${var.project}-${var.environment}-${each.key}"

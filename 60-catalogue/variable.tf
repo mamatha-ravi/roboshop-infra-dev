@@ -15,3 +15,7 @@ variable "zone_id" {
 variable "domain_name" {
     default = "devops88s.online"
 }
+
+variable "app_version"{
+    default = "v3"
+}
