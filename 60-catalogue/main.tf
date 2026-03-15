@@ -36,17 +36,19 @@ resource "terraform_data" "catalogue" {
     ]
   }
 }
+
 resource "aws_ec2_instance_state" "catalogue" {
   instance_id = aws_instance.catalogue.id
   state       = "stopped"
-  depends_on = [ terraform_data.catalogue ]
+  depends_on = [terraform_data.catalogue]
 }
-resource "aws_ami_from_instance" "catalogue" {
-  name               = "${var.project}-${var.environment}-catalogue" 
-  source_instance_id = aws_instance.catalogue.id
- depends_on = [ aws_ec2_instance_state.catalogue ]
 
-  tags =  merge(
+resource "aws_ami_from_instance" "catalogue" {
+  # roboshop-dev-catalogue-v3-i-h468sghy
+  name               = "${var.project}-${var.environment}-catalogue-${var.app_version}-${aws_instance.catalogue.id}"
+  source_instance_id = aws_instance.catalogue.id
+  depends_on = [aws_ec2_instance_state.catalogue]
+  tags = merge(
     {
         Name = "${var.project}-${var.environment}-catalogue"
     },
@@ -59,10 +61,10 @@ resource "aws_lb_target_group" "catalogue" {
   port     = 8080
   protocol = "HTTP"
   vpc_id   = local.vpc_id
- deregistration_delay = 60
+  deregistration_delay = 60
 
   health_check {
-    healthy_threshold = 2  
+    healthy_threshold = 2
     interval = 10
     matcher = "200-299"
     path = "/health"
@@ -75,9 +77,11 @@ resource "aws_lb_target_group" "catalogue" {
 
 resource "aws_launch_template" "catalogue" {
   name = "${var.project}-${var.environment}-catalogue"
-   image_id = aws_ami_from_instance.catalogue.id
+  image_id = aws_ami_from_instance.catalogue.id
+
+  # once autoscaling sees less traffic, it will terminate the instance
   instance_initiated_shutdown_behavior = "terminate"
-    instance_type = "t3.micro"
+  instance_type = "t3.micro"
   vpc_security_group_ids = [local.catalogue_sg_id]
 
   # each time we apply terraform this version will be updated as default
@@ -159,7 +163,6 @@ resource "aws_autoscaling_group" "catalogue" {
     delete = "15m"
   }
 }
-
 
 resource "aws_autoscaling_policy" "catalogue" {
   autoscaling_group_name = aws_autoscaling_group.catalogue.name
